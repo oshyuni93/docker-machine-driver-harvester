@@ -1,0 +1,34 @@
+version: 2
+run:
+  timeout: 5m
+linters:
+  enable:
+    - errcheck
+    - govet
+    - gosec
+    - ineffassign
+    - staticcheck
+    - unused
+    - misspell
+    - prealloc
+  formatters:
+    enable:
+      - gofmt
+  enable-all: false
+  disable-all: true
+  fast: false
+  settings:
+    goimports:
+      local-prefixes: github.com/harvester/docker-machine-driver-harvester
+  exclude-dirs:
+    - go/pkg/mod
+  exclusions:
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - gosec
+        text: "G101" # Potential hardcoded credentials
