@@ -5,6 +5,8 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # 릴리스 생성을 위한 쓰기 권한 추가
 
     steps:
       - name: Checkout
@@ -25,15 +27,17 @@ jobs:
         id: info
         run: |
           source scripts/version
-          echo "::set-output name=artifacts_dir::${PWD}/dist/artifacts"
-          echo "::set-output name=version::$(echo $GITHUB_REF | cut -d / -f 3)"
-          echo "::set-output name=base_version::${VERSION}"
+          echo "artifacts_dir=${PWD}/dist/artifacts" >> $GITHUB_OUTPUT
+          echo "version=$(echo $GITHUB_REF | cut -d / -f 3)" >> $GITHUB_OUTPUT
+          echo "base_version=${VERSION}" >> $GITHUB_OUTPUT
+
       - name: Generate release info
         if: startsWith(github.ref, 'refs/tags/') || startsWith(github.ref, 'refs/heads/master')
         env:
           BASE_VERSION: ${{ steps.info.outputs.base_version }}
         run: |
           echo "🍻" > release.txt
+
       - name: Release
         if: startsWith(github.ref, 'refs/tags/')
         env:
