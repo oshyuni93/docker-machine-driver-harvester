@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/ghodss/yaml"
 )
@@ -275,9 +276,16 @@ type GPUPCIDevice struct {
 }
 
 func parseGPUInfo(gpuInfo string) (*GPUInfo, error) {
+	trimmed := strings.TrimSpace(gpuInfo)
+	if trimmed == "" || trimmed == "undefined" || trimmed == "null" || trimmed == "{}" {
+		return nil, nil
+	}
 	v := &GPUInfo{}
-	if err := json.Unmarshal([]byte(gpuInfo), v); err != nil {
-		return nil, err
+	if err := json.Unmarshal([]byte(trimmed), v); err != nil {
+		return nil, nil
+	}
+	if !v.Enabled {
+		return nil, nil
 	}
 	return v, nil
 }

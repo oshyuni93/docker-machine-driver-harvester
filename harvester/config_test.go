@@ -273,13 +273,23 @@ func Test_parseVGPUInfo(t *testing.T) {
 
 func Test_parseGPUInfo(t *testing.T) {
 	assert := require.New(t)
+
+	// 1. Valid GPU info
 	gpuInfoString := `{"enabled":true,"vendor":"nvidia","model":"A100","pciPassthrough":true,"pciDevice":{"name":"gpu01-0000e2000","address":"0000:e2:00.0","nodeName":"gpu01","resourceName":"nvidia.com/GA100_A100_SXM4_40GB"}}`
 	g, err := parseGPUInfo(gpuInfoString)
 	assert.NoError(err)
+	assert.NotNil(g)
 	assert.True(g.Enabled)
 	assert.Equal("A100", g.Model)
 	assert.NotNil(g.PCIDevice)
 	assert.Equal("gpu01-0000e2000", g.PCIDevice.Name)
 	assert.Equal("nvidia.com/GA100_A100_SXM4_40GB", g.PCIDevice.ResourceName)
 	assert.Equal("gpu01", g.PCIDevice.NodeName)
+
+	// 2. Defensive checks: empty, undefined, null, invalid, disabled
+	for _, invalidStr := range []string{"", "   ", "undefined", "null", "{}", "invalid json", `{"enabled":false}`} {
+		res, err := parseGPUInfo(invalidStr)
+		assert.NoError(err, "should not return error for: "+invalidStr)
+		assert.Nil(res, "expected nil GPUInfo for: "+invalidStr)
+	}
 }
